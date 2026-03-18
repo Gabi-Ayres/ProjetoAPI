@@ -1,4 +1,5 @@
 import * as taskService from "../services/taskService.js";
+import  {createComment, getCommentsByTaskId} from "../services/commentService.js";
 
 
 // // Função q recebe o pedido de busca de tasks e retornar a resposta
@@ -90,3 +91,21 @@ export const deleteTask = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+export const getCommentsForTask = (req, res) => {
+  const taskId = req.params.id;
+
+  const comments = getCommentsByTaskId(taskId);
+
+  res.status(200).json(comments);
+};
+
+export const createTaskComment= (req, res) => {
+  const taskId = req.params.id;
+  const { userId, content } = req.body;
+  
+  const result = createComment(taskId, userId, content);
+   res.status(200).json(result);
+}
+
+

@@ -24,6 +24,9 @@ export const getAllUsers = (search, sort) => {
     return orderedUsers;
 }
 
+export const getUserById = (id) => users.filter((u) => u.id === parseInt(id));
+
+
 //Frunção para criar um novo usuário
 export const createUser = (data) => {
     const newUser = {

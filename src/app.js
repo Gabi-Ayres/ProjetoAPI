@@ -12,9 +12,6 @@ app.use(loggerMiddleware);
 app.use("/tasks", taskRoutes);
 app.use("/users", usersRoutes);
 app.use("/tags", tagsRoutes);
-//app.use("/taskTags", taskTagsRoutes);
-//app.use("/comments", commentsRoutes);
-//.use("/notifications", notificationsRoutes);
 
 app.listen(3000, () => {
   console.log("Servidor rodando em http://localhost:3000");

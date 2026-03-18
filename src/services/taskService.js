@@ -28,6 +28,8 @@ export const getAllTasks = (search, sort) => {
   return orderedTask;
 };
 
+export const getTaskById = (id) => tasks.filter((t) => t.id === parseInt(id));
+
 // Função para obter estatisticas 
 export const getTaskStats = () => {
   const tasks = getAllTasks();
