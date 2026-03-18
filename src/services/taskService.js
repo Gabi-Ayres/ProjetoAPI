@@ -1,10 +1,8 @@
-
 import * as tagService from "./tagService.js";
 
 let tasks = [];
 let idCounter = 1;
 export let taskTags = [];
-
 
 // // Função para obter todos as tasks com busca e ordenação
 export const getAllTasks = (search, sort) => {
@@ -30,13 +28,15 @@ export const getAllTasks = (search, sort) => {
 
 export const getTaskById = (id) => tasks.filter((t) => t.id === parseInt(id));
 
-// Função para obter estatisticas 
+// Função para obter estatisticas
 export const getTaskStats = () => {
   const tasks = getAllTasks();
   const taskPendentes = tasks.filter((t) => t.completed === false);
   const taskConcluidas = tasks.filter((t) => t.completed === true);
   const taskPorcentagem = (
-    (taskConcluidas.length / tasks.length) * 100).toFixed(2);
+    (taskConcluidas.length / tasks.length) *
+    100
+  ).toFixed(2);
 
   return {
     total: tasks.length,
@@ -47,9 +47,9 @@ export const getTaskStats = () => {
 };
 
 // Função para clonar as TasksTags
-export const getTaskTags= () => {
+export const getTaskTags = () => {
   return [...taskTags];
-}
+};
 
 // Função para criar uma Task
 export const createTask = (data) => {
@@ -79,14 +79,17 @@ export const createTaskTag = (taskId, tagId) => {
   }
 
   // valida se tag existe
-  const tagExists = tagService.getAllTags().some((t) => t.id ===  parseInt(tagId));
+  const tagExists = tagService
+    .getAllTags()
+    .some((t) => t.id === parseInt(tagId));
   if (!tagExists) {
     throw new Error("Tag não encontrada");
   }
 
   // evita duplicados
   const alreadyLinked = taskTags.some(
-    (tt) => tt.taskId === parseInt(taskId) && tt.tagId === parseInt(tagId));
+    (tt) => tt.taskId === parseInt(taskId) && tt.tagId === parseInt(tagId),
+  );
   if (alreadyLinked) {
     throw new Error("Task já possui essa Tag associada");
   }
@@ -110,6 +113,6 @@ export const updateTask = (taskId, data) => {
 };
 
 // Função para deletar uma Task
-export const deleteTask =  (taskId) => {
+export const deleteTask = (taskId) => {
   tasks = tasks.filter((t) => t.id !== parseInt(taskId));
 };

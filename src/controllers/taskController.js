@@ -1,6 +1,8 @@
 import * as taskService from "../services/taskService.js";
-import  {createComment, getCommentsByTaskId} from "../services/commentService.js";
-
+import {
+  createComment,
+  getCommentsByTaskId,
+} from "../services/commentService.js";
 
 // // Função q recebe o pedido de busca de tasks e retornar a resposta
 export const getTasks = (req, res) => {
@@ -11,10 +13,9 @@ export const getTasks = (req, res) => {
 
 // Função q recebe o pedido de estatistica das tasks e retornar a resposta
 export const getTaskStats = (req, res) => {
-  const stats = taskService.getAllTasks();
+  const stats = taskService.getTaskStats();
   res.json(stats);
 };
-
 
 // Função q recebe o pedido para criação de Tasks e retornar a resposta
 export const createTask = (req, res) => {
@@ -23,7 +24,7 @@ export const createTask = (req, res) => {
   if (title.length < 4) {
     return res
       .status(400)
-      .json({ error: "Título tem que ter pelo menos 4 caracters"});
+      .json({ error: "Título tem que ter pelo menos 4 caracters" });
   }
   if (responsavelNome === undefined || responsavelNome === null) {
     return res
@@ -100,14 +101,14 @@ export const getCommentsForTask = (req, res) => {
   res.status(200).json(comments);
 };
 
-export const createTaskComment= (req, res) => {
-  try{
-  const taskId = req.params.id;
-  const { userId, content } = req.body;
-  
-  const result = createComment(taskId, userId, content);
-   res.status(200).json(result);
-} catch (error) {
-  res.status(400).json({ message: error.message });
-}
+export const createTaskComment = (req, res) => {
+  try {
+    const taskId = req.params.id;
+    const { userId, content } = req.body;
+
+    const result = createComment(taskId, userId, content);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 };
