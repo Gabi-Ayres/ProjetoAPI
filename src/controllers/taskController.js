@@ -101,11 +101,13 @@ export const getCommentsForTask = (req, res) => {
 };
 
 export const createTaskComment= (req, res) => {
+  try{
   const taskId = req.params.id;
   const { userId, content } = req.body;
   
   const result = createComment(taskId, userId, content);
    res.status(200).json(result);
+} catch (error) {
+  res.status(400).json({ message: error.message });
 }
-
-
+};
