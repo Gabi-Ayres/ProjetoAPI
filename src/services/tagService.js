@@ -1,43 +1,56 @@
 import * as taskService from "./taskService.js";
+import db from "../db.js";
 
-let tags = [];
-let idTag = 0;
 
 // Função para obter todas as tags
-export const getAllTags = () => {
-  return tags;
+export const getAllTags = async () => {
+  const [rows] = await db.query("SELECT * FROM tags");
+  return rows;
 };
 
 // Função para obter as tarefas associadas a uma tag específica
-export const getTasksByTagId = (tagId) => {
-  const filteredTags = taskService
-    .getTaskTags()
-    .filter((tt) => tt.tagId === parseInt(tagId));
-  const filteredTasks = filteredTags.map((t) => t.taskId);
-  const filteredTasksTags = taskService
-    .getAllTasks()
-    .filter((tt) => filteredTasks.includes(tt.id));
-  return filteredTasksTags;
-};
+export const getTasksByTagId = async (id) => {
+  const [rows] = await db.query(
+    `SELECT tasks.title, tags.name 
+    FROM task_tag
+    JOIN tasks ON task_tag.task_id = tasks.id
+    JOIN tags ON task_tag.tag_id = tags.id
+    WHERE task_tag.tag_id = ?`,
+    [id]
+
+  );
+
+  return rows;
+}
+
 
 // Função para criar uma nova tag
-export const createTag = (data) => {
-  if (!data.name || data.name === "") {
-    throw new Error("Nome da tag é obrigatório");
-  }
-  const newTag = {
-    id: ++idTag,
-    name: data.name,
-  };
+export const createTag = async (name) => {
+  const [result] = await db.query(
+    "INSERT INTO tags (name) VALUES (?)",
+    [name]
+  );
 
-  tags.push(newTag);
-  return newTag;
+  const [rows] = await db.query(
+    "SELECT * FROM tags WHERE id = ?",
+    [result.insertId]
+  );
+
+  return rows[0];
 };
 
 // Função para remover todas as associacões da tag e depois remover ela
-export const deleteTag = (tagsId) => {
-  taskService.taskTags = taskService.taskTags.filter(
-    (tt) => tt.tagId !== parseInt(tagsId),
+export const deleteTag = async (id) => {
+  const [rows] = await db.query(
+    "SELECT * FROM tags WHERE id = ?",
+    [id]
   );
-  tags = tags.filter((t) => t.id !== parseInt(tagsId));
+
+  if (rows.length === 0) {
+    throw new Error("Tag não encontrada");
+  }
+
+  await db.query("DELETE FROM tags WHERE id = ?", [id]);
+
+  return { mensagem: "Tag excluída" };
 };

@@ -1,46 +1,51 @@
 import { getTaskById } from "./taskService.js";
 import { getUserById } from "./userService.js";
 
-let comments = [];
-let commentIdCounter = 1;
 
-export const getCommentsByTaskId = (taskId) => {
-  // Pega todos os comentários
-  // const allComments = getTaskById();
-
-  // Filtra apenas os comentários da task desejada
-  const filteredComments = comments.filter(
-    (c) => c.taskId === parseInt(taskId),
+export const getCommentsByTaskId = async (task_id) => {
+  const [rows] = await db.query(
+    "SELECT comments FROM comments WHERE tasks.id = ?", [task_id]
   );
-
-  return filteredComments;
+  
+  return rows;
 };
 
-export const createComment = (taskId, userId, content) => {
-  // Verifica se a task existe
-  const taskExists = getTaskById(taskId).some((t) => t.id === parseInt(taskId));
+export const createComment = async (taskId, userId, content) => {
+  taskId = parseInt(taskId);
+  userId = parseInt(userId);
 
-  if (!taskExists) {
+  // Verifica se a task existe
+  const [taskRows] = await db.query(
+    "SELECT * FROM tasks WHERE id = ?",
+    [taskId]
+  );
+
+  if (taskRows.length === 0) {
     throw new Error("Task não existe");
   }
 
-  // Verifica se o usuário existe
-  const userExists = getUserById(userId).some((u) => u.id === parseInt(userId));
-  if (!userExists) {
+  // Verifica se o user existe
+  const [userRows] = await db.query(
+    "SELECT * FROM users WHERE id = ?",
+    [userId]
+  );
+
+  if (userRows.length === 0) {
     throw new Error("User não existe");
   }
 
   // Cria o comentário
-  const newcomment = {
-    id: commentIdCounter++,
-    taskId: parseInt(taskId),
-    userId: parseInt(userId),
-    content: content,
-    dataCriacao: new Date(),
-  };
+  const [result] = await db.query(
+    `INSERT INTO comments (content, user_id, task_id)
+     VALUES (?, ?, ?)`,
+    [content, userId, taskId]
+  );
 
-  // Adiciona ao array de comentários
-  comments.push(newcomment);
+  // Buscar o comentário criado
+  const [rows] = await db.query(
+    "SELECT * FROM comments WHERE id = ?",
+    [result.insertId]
+  );
 
-  return newcomment;
+  return rows[0];
 };

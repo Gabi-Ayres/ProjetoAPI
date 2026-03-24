@@ -1,16 +1,13 @@
+import {getUserById} from "../services/userService.js";
 
-import { users } from "../services/userService.js";
+export const checkUserExists = async (req, res, next) => {
+  try {
+    const user = await getUserById(req.params.id);
 
+    req.user = user;
 
-export const checkUserExists = (req, res, next) => {
-const userId = req.params.id;
-
-const user = users.find(u => u.id === parseInt(userId));
-
-if (!user) 
-    return res.status(404).json({ error: "Utilizador não encontrado" });
-
-
-next();
-
+    next();
+  } catch (error) {
+    return res.status(404).json({ error: error.message });
+  }
 };

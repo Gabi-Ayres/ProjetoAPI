@@ -1,26 +1,47 @@
 import * as tagService from "../services/tagService.js";
 
 // Função q recebe o pedido para mostrar as Tags e retornar a resposta
-export const getAllTags = (req, res) => {
-  const tags = tagService.getAllTags();
-  res.json(tags);
+export const getTags = async (req, res) => {
+  try {
+    const tags = await tagService.getAllTags();
+    res.json(tags);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 // Função q recebe o pedido para mostrar TaskTag e retornar a resposta
-export const getTaskByTagId = (req, res) => {
-  const tagId = req.params.id;
-  const tasks = tagService.getTasksByTagId(tagId);
-  res.json(tasks);
+export const getTasksByTag = async (req, res) => {
+  try {
+    const tasks = await tagService.getTasksByTagId(req.params.id);
+    res.json(tasks);
+  } catch (error) {
+    res.status(404).json({ error: error.message });
+  }
 };
 
 // Função q recebe o pedido para criação de Tag e retornar a resposta
-export const createTag = (req, res) => {
-  const newTag = tagService.createTag(req.body);
-  res.status(201).json(newTag);
+export const createTag = async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    if (!name || name === "") {
+      return res.status(400).json({ error: "Nome da tag é obrigatório" });
+    }
+
+    const tag = await tagService.createTag(name);
+    res.status(201).json(tag);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
 
-// Função q recebe o pedido para criação de Tasks e retornar a resposta
-export const deleteTag = (req, res) => {
-  tagService.deleteTag(req.params.id);
-  res.json({ mensagem: "Tag exluída" });
+
+export const deleteTag = async (req, res) => {
+  try {
+    const result = await tagService.deleteTag(req.params.id);
+    res.json(result);
+  } catch (error) {
+    res.status(404).json({ error: error.message });
+  }
 };

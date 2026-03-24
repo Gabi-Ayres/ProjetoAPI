@@ -1,57 +1,105 @@
-export let users = [];
-let idUser = 0;
+import db from "../db.js";
+
 
 // Função para obter todos os usarios com busca e ordenação
-export const getAllUsers = (search, sort) => {
-  if (!search && !sort) {
-    return users;
-  }
+export const getAllUsers = async (search, sort) => {
+ let query = "SELECT * FROM users";
+ 
+ let params = []
 
-  let orderedUsers = [...users];
-
-  if (typeof search === "string") {
-    orderedUsers = orderedUsers.filter((u) =>
-      u.name.toLowerCase().includes(search.toLowerCase()),
-    );
+  if (search) {
+   query += " WHERE name LIKE ?";
+   params.push(`%${search}%`);
   }
 
   if (sort === "asc") {
-    orderedUsers.sort((a, b) => a.name.localeCompare(b.name));
+   query += " ORDER BY name ASC";
   } else if (sort === "desc") {
-    orderedUsers.sort((a, b) => b.name.localeCompare(a.name));
+    query += " ORDER BY name DESC";
   }
 
-  return orderedUsers;
+  const [rows] =  await db.query(query, params);
+  return rows;
 };
 
-export const getUserById = (id) => users.filter((u) => u.id === parseInt(id));
+export const getUserById = async (id) => {
+  const [rows] = await db.query(
+    "SELECT * FROM users WHERE id = ?", [id]
+  );
+
+  if (rows.length === 0)
+    throw new Error ("User não encontrado");
+
+  return rows[0];
+} 
 
 //Frunção para criar um novo usuário
-export const createUser = (data) => {
-  const newUser = {
-    id: ++idUser,
-    name: data.name,
-    email: data.email,
-    active: data.active ?? true,
-  };
-  users.push(newUser);
-  return newUser;
+export const createUser = async (name, email, active) => {
+  let result;
+
+  if (active === undefined) {
+    [result] = await db.query(
+      "INSERT INTO users (name, email) VALUES (?, ?)",
+      [name, email]
+    );
+  } else {
+    [result] = await db.query(
+      "INSERT INTO users (name, email, active) VALUES (?, ?, ?)",
+      [name, email, active]
+    );
+  }
+
+  const [rows] = await db.query(
+    "SELECT * FROM users WHERE id = ?",
+    [result.insertId]
+  );
+
+  return rows[0];
 };
 
 // Função para atualizar um usuário
-export const updateUser = (userId, data) => {
-  const user = users.find((u) => u.id === parseInt(userId));
+export const updateUser = async (id, data) => {
+  const [rows] = await db.query(
+    "SELECT * FROM users WHERE id = ?",
+    [id]
+  );
 
-  if (!user) {
+  if (rows.length === 0) {
     throw new Error("User not found");
   }
-  user.name = data.name ?? user.name;
-  user.email = data.email ?? user.email;
-  user.active = data.active ?? user.active;
-  return user;
+
+  const user = rows[0];
+
+  const name = data.name ?? user.name;
+  const email = data.email ?? user.email;
+  const active = data.active ?? user.active;
+
+  await db.query(
+    `UPDATE users 
+     SET name = ?, email = ?, active = ? 
+     WHERE id = ?`,
+    [name, email, active, id]
+  );
+
+  const [updatedRows] = await db.query(
+    "SELECT * FROM users WHERE id = ?",
+    [id]
+  );
+
+  return updatedRows[0];
 };
 
 // Função para deletar um usuário
-export const deleteUser = (userId) => {
-  users = users.filter((u) => u.id !== parseInt(userId));
+export const deleteUser = async(id) => {
+   const [rows] = await db.query(
+    "SELECT * FROM users WHERE id = ?", [id]
+  );
+
+  if (rows.length === 0) {
+    throw new Error ("User não encontrado");
+  }
+
+  await db.query("DELETE FROM users WHERE id = ?", [id]);
+
+  return {message: "User excluído"};
 };
